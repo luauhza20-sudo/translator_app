@@ -1,6 +1,7 @@
 import os
 import gradio as gr
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 # =========================
 # Modelo local
@@ -11,43 +12,45 @@ print(f"Cargando modelo: {MODEL_NAME}")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForCausalLM.from_pretrained(
     MODEL_NAME,
-    device_map="auto",
+    torch_dtype=torch.float32,
+    device_map="cpu",
     trust_remote_code=True
 )
 
-generator = pipeline(
-    "text-generation",
-    model=model,
-    tokenizer=tokenizer
-)
-
-# =========================
-# Traducción
-# =========================
 def translate_text(text, target_language):
     if not text or not text.strip():
         return "Escribe un texto para traducir."
 
-    prompt = f"""
-Translate the following sentence into {target_language}.
+    prompt = f"""Translate the following sentence into {target_language}.
 Return only the translation and nothing else.
 
 Sentence: {text}
 """
 
-    try:
-        result = generator(
-            prompt,
+    messages = [
+        {"role": "system", "content": "You are a translation assistant."},
+        {"role": "user", "content": prompt}
+    ]
+
+    input_text = tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True
+    )
+
+    inputs = tokenizer(input_text, return_tensors="pt")
+
+    with torch.no_grad():
+        outputs = model.generate(
+            **inputs,
             max_new_tokens=60,
             do_sample=False,
             temperature=0.1,
-            return_full_text=False
-        )[0]["generated_text"].strip()
+            pad_token_id=tokenizer.eos_token_id
+        )
 
-        return result if result else "No se pudo generar traducción."
-
-    except Exception as e:
-        return f"Error: {str(e)}"
+    result = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    return result.strip()
 
 # =========================
 # Interfaz
