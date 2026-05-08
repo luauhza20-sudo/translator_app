@@ -4,7 +4,9 @@ Aplicación de traducción local usando **Qwen2-0.5B-Instruct**. Corre completam
 
 ## Screenshot
 
-![Traductor Neural](screenshot.png)
+<img width="1916" height="1027" alt="Captura de pantalla 2026-05-01 210037" src="https://github.com/user-attachments/assets/26088b04-3ee7-4397-b9a8-88609969a4b1" />
+
+
 
 ## Ejemplos probados
 
