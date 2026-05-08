@@ -1,345 +1,69 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Traductor ES → FR</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet"/>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg:      #0a0a0f;
-    --surface: #111118;
-    --card:    #16161f;
-    --border:  #252535;
-    --accent:  #7c6aff;
-    --accent2: #ff6a88;
-    --text:    #e8e8f0;
-    --muted:   #6b6b80;
-    --success: #4ade80;
-    --radius:  16px;
-  }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 2rem 1rem 4rem;
-    background-image:
-      radial-gradient(ellipse 80% 50% at 20% -10%, rgba(124,106,255,.18) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 110%, rgba(255,106,136,.12) 0%, transparent 60%);
-  }
-
-  header {
-    text-align: center;
-    margin-bottom: 3rem;
-    animation: fadeDown .6s ease both;
-  }
-  header h1 {
-    font-family: 'Syne', sans-serif;
-    font-size: clamp(2.2rem, 5vw, 3.4rem);
-    font-weight: 800;
-    letter-spacing: -.02em;
-    background: linear-gradient(135deg, #fff 30%, var(--accent) 70%, var(--accent2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    line-height: 1.1;
-  }
-  header p {
-    margin-top: .6rem;
-    color: var(--muted);
-    font-size: .95rem;
-    font-style: italic;
-  }
-  .pill {
-    display: inline-block;
-    background: rgba(124,106,255,.15);
-    border: 1px solid rgba(124,106,255,.3);
-    color: var(--accent);
-    font-size: .75rem;
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    padding: .3rem .9rem;
-    border-radius: 999px;
-    margin-bottom: 1rem;
-  }
-
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.8rem;
-    width: 100%;
-    max-width: 820px;
-    animation: fadeUp .6s ease both;
-  }
-
-  .lang-bar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    margin-bottom: 1.4rem;
-  }
-  .lang-tag {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 1rem;
-    letter-spacing: .04em;
-    color: var(--text);
-    background: rgba(124,106,255,.12);
-    border: 1px solid rgba(124,106,255,.25);
-    border-radius: 10px;
-    padding: .5rem 1.2rem;
-  }
-  .arrow {
-    font-size: 1.4rem;
-    color: var(--accent);
-  }
-
-  .panels {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
-  @media(max-width:580px){ .panels { grid-template-columns: 1fr; } }
-
-  textarea, .output-box {
-    width: 100%;
-    min-height: 160px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1rem;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 1rem;
-    color: var(--text);
-    resize: vertical;
-    outline: none;
-    transition: border-color .2s;
-    line-height: 1.6;
-  }
-  textarea::placeholder { color: var(--muted); }
-  textarea:focus { border-color: var(--accent); }
-
-  .output-box {
-    cursor: default;
-    display: flex;
-    align-items: flex-start;
-  }
-  .output-box .placeholder { color: var(--muted); font-style: italic; }
-  .output-box .translation  { white-space: pre-wrap; }
-
-  .panel-label {
-    font-size: .72rem;
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: .5rem;
-  }
-
-  .translate-btn {
-    margin-top: 1.4rem;
-    width: 100%;
-    padding: .85rem;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff;
-    font-family: 'Syne', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: .04em;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: opacity .2s, transform .15s;
-    position: relative;
-    overflow: hidden;
-  }
-  .translate-btn:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
-  .translate-btn:disabled { opacity: .55; cursor: not-allowed; }
-  .translate-btn.loading::after {
-    content: '';
-    position: absolute; inset: 0;
-    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.15) 50%, transparent 100%);
-    animation: shimmer 1.2s infinite;
-  }
-
-  .examples {
-    margin-top: 2rem;
-    width: 100%;
-    max-width: 820px;
-    animation: fadeUp .6s .1s ease both;
-  }
-  .examples h2 {
-    font-family: 'Syne', sans-serif;
-    font-size: .78rem;
-    font-weight: 700;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: .8rem;
-  }
-  .example-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .6rem;
-  }
-  .chip {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: .45rem 1rem;
-    font-size: .85rem;
-    cursor: pointer;
-    transition: border-color .2s, background .2s;
-    color: var(--text);
-  }
-  .chip:hover { border-color: var(--accent); background: rgba(124,106,255,.08); }
-
-  .status {
-    margin-top: .8rem;
-    font-size: .8rem;
-    color: var(--muted);
-    min-height: 1.2em;
-    text-align: center;
-  }
-  .status.error { color: var(--accent2); }
-  .status.ok    { color: var(--success); }
-
-  .spinner {
-    display: none;
-    width: 18px; height: 18px;
-    border: 2px solid rgba(255,255,255,.3);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: spin .7s linear infinite;
-    margin: 0 auto;
-  }
-  .spinner.visible { display: inline-block; }
-
-  @keyframes spin     { to { transform: rotate(360deg); } }
-  @keyframes shimmer  { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
-  @keyframes fadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:none} }
-  @keyframes fadeUp   { from{opacity:0;transform:translateY(20px)}  to{opacity:1;transform:none} }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Traductor con Qwen2-0.5B</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 24px;
+      background: #111827;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+    h1 {
+      color: #38bdf8;
+    }
+    .card {
+      background: #1f2937;
+      padding: 18px;
+      border-radius: 12px;
+      margin: 16px 0;
+      border: 1px solid #334155;
+    }
+    code {
+      background: #0f172a;
+      padding: 2px 6px;
+      border-radius: 6px;
+      color: #86efac;
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <h1>Traductor con Qwen2-0.5B</h1>
 
-<header>
-  <div class="pill">Powered by Qwen2-0.5B</div>
-  <h1>Traductor Neural</h1>
-  <p>Traducción local con IA — sin internet, sin API keys</p>
-</header>
-
-<div class="card">
-  <div class="lang-bar">
-    <span class="lang-tag">🇪🇸 Español</span>
-    <span class="arrow">→</span>
-    <span class="lang-tag">🇫🇷 Francés</span>
-  </div>
-
-  <div class="panels">
-    <div>
-      <div class="panel-label">Texto en español</div>
-      <textarea id="inputText" placeholder="Escribe o pega tu texto aquí…"></textarea>
+    <div class="card">
+      <h2>Descripción</h2>
+      <p>
+        Esta app traduce texto de un idioma a otro usando un modelo local pequeño tipo Instruct.
+      </p>
     </div>
-    <div>
-      <div class="panel-label">Traducción al francés</div>
-      <div class="output-box" id="outputBox">
-        <span class="placeholder" id="outputPlaceholder">La traducción aparecerá aquí…</span>
-        <span class="translation" id="outputText" style="display:none"></span>
-      </div>
+
+    <div class="card">
+      <h2>Ejemplos soportados</h2>
+      <ul>
+        <li>I like soccer</li>
+        <li>How are you?</li>
+        <li>What time is it?</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Uso</h2>
+      <p>
+        Ejecuta <code>app.py</code> localmente para abrir la interfaz.
+      </p>
     </div>
   </div>
-
-  <button class="translate-btn" id="translateBtn" onclick="doTranslate()">
-    <span id="btnLabel">Traducir</span>
-    <span class="spinner" id="spinner"></span>
-  </button>
-
-  <div class="status" id="status"></div>
-</div>
-
-<div class="examples">
-  <h2>Ejemplos rápidos</h2>
-  <div class="example-chips">
-    <button class="chip" onclick="setExample('Me gusta el fútbol')">Me gusta el fútbol</button>
-    <button class="chip" onclick="setExample('¿Cómo estás?')">¿Cómo estás?</button>
-    <button class="chip" onclick="setExample('¿Qué hora es?')">¿Qué hora es?</button>
-    <button class="chip" onclick="setExample('Buenos días, que tengas un buen día.')">Buenos días</button>
-    <button class="chip" onclick="setExample('¿Dónde está el restaurante más cercano?')">¿Dónde está el restaurante?</button>
-  </div>
-</div>
-
-<script>
-  async function doTranslate() {
-    const text = document.getElementById('inputText').value.trim();
-    if (!text) { setStatus('Por favor escribe algo para traducir.', 'error'); return; }
-
-    setLoading(true);
-    setStatus('Traduciendo…');
-
-    try {
-      const res  = await fetch('/translate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-
-      showOutput(data.translation);
-      setStatus(`Listo en ${data.elapsed_ms} ms ✓`, 'ok');
-    } catch (e) {
-      setStatus('Error: ' + e.message, 'error');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function showOutput(text) {
-    document.getElementById('outputPlaceholder').style.display = 'none';
-    const el = document.getElementById('outputText');
-    el.style.display = 'inline';
-    el.textContent = text;
-  }
-
-  function setLoading(on) {
-    const btn = document.getElementById('translateBtn');
-    btn.disabled = on;
-    btn.classList.toggle('loading', on);
-    document.getElementById('btnLabel').style.display = on ? 'none' : 'inline';
-    document.getElementById('spinner').classList.toggle('visible', on);
-  }
-
-  function setStatus(msg, cls) {
-    const el = document.getElementById('status');
-    el.textContent = msg;
-    el.className = 'status ' + (cls || '');
-  }
-
-  function setExample(text) {
-    document.getElementById('inputText').value = text;
-    document.getElementById('outputPlaceholder').style.display = 'inline';
-    document.getElementById('outputText').style.display = 'none';
-    setStatus('');
-  }
-
-  // Ctrl+Enter para traducir
-  document.addEventListener('keydown', e => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') doTranslate();
-  });
-</script>
 </body>
 </html>
